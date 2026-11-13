@@ -1,0 +1,88 @@
+name: x-content-agent
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+services:
+  agent:
+    build: .
+    env_file: .env
+    restart: unless-stopped
+    init: true
+    read_only: true
+    tmpfs: ["/tmp:size=16m,noexec,nosuid"]
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    mem_limit: 512m
+    cpus: 1
+    volumes:
+      - ./config:/app/config:ro
+      - ./secrets:/run/secrets:ro
+    networks: [backend, outbound]
+    logging: *logging
+  n8n:
+    image: n8nio/n8n:2.46.6
+    restart: unless-stopped
+    environment:
+      TZ: Asia/Kolkata
+      GENERIC_TIMEZONE: Asia/Kolkata
+      N8N_HOST: ${PUBLIC_HOST:?Set PUBLIC_HOST}
+      N8N_PORT: 5678
+      N8N_PROTOCOL: https
+      WEBHOOK_URL: https://${PUBLIC_HOST}/
+      N8N_EDITOR_BASE_URL: http://localhost:5678/
+      N8N_PROXY_HOPS: 1
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY:?Set N8N_ENCRYPTION_KEY}
+      N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: "true"
+      N8N_SECURE_COOKIE: "true"
+      N8N_DIAGNOSTICS_ENABLED: "false"
+      N8N_PERSONALIZATION_ENABLED: "false"
+      N8N_VERSION_NOTIFICATIONS_ENABLED: "false"
+      N8N_BLOCK_ENV_ACCESS_IN_NODE: "true"
+      N8N_COMMUNITY_PACKAGES_ENABLED: "false"
+      N8N_PUBLIC_API_DISABLED: "true"
+      EXECUTIONS_DATA_PRUNE: "true"
+      EXECUTIONS_DATA_MAX_AGE: 168
+      EXECUTIONS_DATA_PRUNE_MAX_COUNT: 1000
+      EXECUTIONS_DATA_SAVE_ON_SUCCESS: none
+      EXECUTIONS_DATA_SAVE_ON_ERROR: none
+      EXECUTIONS_DATA_SAVE_MANUAL_EXECUTIONS: "false"
+    ports: ["127.0.0.1:5678:5678"]
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./workflows:/import:ro
+    networks: [backend, outbound]
+    depends_on:
+      agent: { condition: service_healthy }
+    mem_limit: 1536m
+    cpus: 1
+    security_opt: ["no-new-privileges:true"]
+    logging: *logging
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:5678/healthz').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+  caddy:
+    image: caddy:2.11.9-alpine
+    restart: unless-stopped
+    environment:
+      PUBLIC_HOST: ${PUBLIC_HOST}
+    ports: ["80:80", "443:443"]
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks: [backend, outbound]
+    depends_on: [n8n]
+    mem_limit: 128m
+    logging: *logging
+networks:
+  backend:
+    internal: true
+  outbound: {}
+volumes:
+  n8n_data:
+  caddy_data:
+  caddy_config:

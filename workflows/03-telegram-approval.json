@@ -1,0 +1,162 @@
+{
+  "id": "XAgentApproval",
+  "name": "X Agent · C · Telegram approval",
+  "active": false,
+  "nodes": [
+    {
+      "id": "telegram-webhook",
+      "name": "Telegram webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "telegram-approval",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "webhookId": "x-agent-telegram-approval",
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "Telegram webhook secret — configure after import"
+        }
+      }
+    },
+    {
+      "id": "persist-authorized-update",
+      "name": "Persist authorized update",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        260,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://agent:3000/telegram",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { update: $json.body, secret: $json.headers[\"x-telegram-bot-api-secret-token\"] } }}",
+        "options": {
+          "timeout": 300000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "Agent internal API — configure after import"
+        }
+      }
+    },
+    {
+      "id": "acknowledge-durable-receipt",
+      "name": "Acknowledge durable receipt",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        520,
+        0
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\"ok\":true}",
+        "options": {
+          "responseCode": 200
+        }
+      }
+    },
+    {
+      "id": "process-approval-inbox",
+      "name": "Process approval inbox",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        780,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://agent:3000/approval",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {} }}",
+        "options": {
+          "timeout": 300000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "Agent internal API — configure after import"
+        }
+      }
+    },
+    {
+      "id": "setup-notes",
+      "name": "Setup notes",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -320
+      ],
+      "parameters": {
+        "content": "Set webhook header credential: X-Telegram-Bot-Api-Secret-Token = TELEGRAM_WEBHOOK_SECRET. Set HTTP nodes to the separate Agent internal API credential. Acknowledge only AFTER durable inbox insertion. /monitor also recovers pending inbox work. Only the configured private chat and allowlisted sender are accepted.",
+        "height": 250,
+        "width": 440
+      }
+    }
+  ],
+  "connections": {
+    "Telegram webhook": {
+      "main": [
+        [
+          {
+            "node": "Persist authorized update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Persist authorized update": {
+      "main": [
+        [
+          {
+            "node": "Acknowledge durable receipt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Acknowledge durable receipt": {
+      "main": [
+        [
+          {
+            "node": "Process approval inbox",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Kolkata",
+    "saveDataErrorExecution": "none",
+    "saveDataSuccessExecution": "none",
+    "saveManualExecutions": false,
+    "executionTimeout": 900,
+    "errorWorkflow": "XAgentMonitoring"
+  },
+  "pinData": {},
+  "tags": []
+}

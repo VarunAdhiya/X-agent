@@ -1,0 +1,146 @@
+{
+  "id": "XAgentGeneration",
+  "name": "X Agent · B · Generate five drafts",
+  "active": false,
+  "nodes": [
+    {
+      "id": "called-by-discovery",
+      "name": "Called by discovery",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "inputSource": "passthrough"
+      }
+    },
+    {
+      "id": "manual-rerun",
+      "name": "Manual rerun",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        220
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "generate-validated-batch",
+      "name": "Generate validated batch",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        260,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://agent:3000/generate",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { mode: $json.mode || ($execution.mode === \"test\" ? \"manual\" : \"scheduled\"), request_id: $json.request_id || (\"generation:\" + $execution.id) } }}",
+        "options": {
+          "timeout": 300000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "Agent internal API — configure after import"
+        }
+      }
+    },
+    {
+      "id": "deliver-draft-messages",
+      "name": "Deliver draft messages",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        520,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://agent:3000/monitor",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {} }}",
+        "options": {
+          "timeout": 300000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "Agent internal API — configure after import"
+        }
+      }
+    },
+    {
+      "id": "setup-notes",
+      "name": "Setup notes",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -320
+      ],
+      "parameters": {
+        "content": "Scheduled: one five-draft batch per IST day. Each new manual execution requests five additional unscheduled drafts, subject to Gemini budget and available unique topics. Gemini JSON is validated by the internal service and saved through restricted PostgreSQL functions. Retries of the same execution ID do not duplicate its batch. Failed runs can be rerun after fixing their cause.",
+        "height": 250,
+        "width": 440
+      }
+    }
+  ],
+  "connections": {
+    "Called by discovery": {
+      "main": [
+        [
+          {
+            "node": "Generate validated batch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual rerun": {
+      "main": [
+        [
+          {
+            "node": "Generate validated batch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate validated batch": {
+      "main": [
+        [
+          {
+            "node": "Deliver draft messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Kolkata",
+    "saveDataErrorExecution": "none",
+    "saveDataSuccessExecution": "none",
+    "saveManualExecutions": false,
+    "executionTimeout": 900,
+    "errorWorkflow": "XAgentMonitoring"
+  },
+  "pinData": {},
+  "tags": []
+}

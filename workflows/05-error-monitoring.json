@@ -1,0 +1,237 @@
+{
+  "id": "XAgentMonitoring",
+  "name": "X Agent · E · Errors and monitoring",
+  "active": false,
+  "nodes": [
+    {
+      "id": "workflow-error",
+      "name": "Workflow error",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "record-sanitized-failure",
+      "name": "Record sanitized failure",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        260,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://agent:3000/error",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json }}",
+        "options": {
+          "timeout": 300000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "Agent internal API — configure after import"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "throttle-outage-alerts",
+      "name": "Throttle outage alerts",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        500,
+        100
+      ],
+      "parameters": {
+        "jsCode": "const state = $getWorkflowStaticData('global');\nconst now = Date.now();\nif (now - (state.lastEmergencyAlert || 0) < 3600000) return [];\nstate.lastEmergencyAlert = now;\nreturn [{ json: { alert: true } }];"
+      }
+    },
+    {
+      "id": "emergency-telegram-alert",
+      "name": "Emergency Telegram alert",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        760,
+        100
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "REPLACE_WITH_PRIVATE_CHAT_ID",
+        "text": "X content agent cannot record an n8n error. Check the VPS, internal service and Supabase. Publishing remains approval-gated.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "credentials": {
+        "telegramApi": {
+          "name": "Telegram bot — configure after import"
+        }
+      }
+    },
+    {
+      "id": "schedule-ist",
+      "name": "Schedule IST",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "* * * * *"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "recover-and-deliver-outbox",
+      "name": "Recover and deliver outbox",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        260,
+        300
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://agent:3000/monitor",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {} }}",
+        "options": {
+          "timeout": 300000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "Agent internal API — configure after import"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "manual-rerun",
+      "name": "Manual rerun",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        220
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "setup-notes",
+      "name": "Setup notes",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -320
+      ],
+      "parameters": {
+        "content": "Select this workflow as Error Workflow in A–D after import. Configure emergency Telegram credential + private chat ID. Its fallback can notify when the internal service/database is unavailable. This workflow does not self-reference as an error workflow. Monitor detects stuck claims and never retries X posting. External VM outages cannot be detected by the same VM.",
+        "height": 250,
+        "width": 440
+      }
+    }
+  ],
+  "connections": {
+    "Workflow error": {
+      "main": [
+        [
+          {
+            "node": "Record sanitized failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record sanitized failure": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Throttle outage alerts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Throttle outage alerts": {
+      "main": [
+        [
+          {
+            "node": "Emergency Telegram alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule IST": {
+      "main": [
+        [
+          {
+            "node": "Recover and deliver outbox",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual rerun": {
+      "main": [
+        [
+          {
+            "node": "Recover and deliver outbox",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recover and deliver outbox": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Throttle outage alerts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Kolkata",
+    "saveDataErrorExecution": "none",
+    "saveDataSuccessExecution": "none",
+    "saveManualExecutions": false,
+    "executionTimeout": 900
+  },
+  "pinData": {},
+  "tags": []
+}

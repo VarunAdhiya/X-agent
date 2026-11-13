@@ -1,0 +1,115 @@
+{
+  "id": "XAgentPublishing",
+  "name": "X Agent · D · Scheduled publishing",
+  "active": false,
+  "nodes": [
+    {
+      "id": "schedule-ist",
+      "name": "Schedule IST",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "* * * * *"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "manual-rerun",
+      "name": "Manual rerun",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        220
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "claim-and-publish-safely",
+      "name": "Claim and publish safely",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        260,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://agent:3000/publish",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {} }}",
+        "options": {
+          "timeout": 300000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "Agent internal API — configure after import"
+        }
+      }
+    },
+    {
+      "id": "setup-notes",
+      "name": "Setup notes",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -320
+      ],
+      "parameters": {
+        "content": "Poll every minute; database permits only 10:00 / 13:00 / 16:00 / 19:00 / 22:00 IST slots within a five-minute grace window. Approval must predate the slot. DRY_RUN=true is default. Never enable HTTP node retry: ambiguous X responses require manual reconciliation.",
+        "height": 250,
+        "width": 440
+      }
+    }
+  ],
+  "connections": {
+    "Schedule IST": {
+      "main": [
+        [
+          {
+            "node": "Claim and publish safely",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual rerun": {
+      "main": [
+        [
+          {
+            "node": "Claim and publish safely",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Kolkata",
+    "saveDataErrorExecution": "none",
+    "saveDataSuccessExecution": "none",
+    "saveManualExecutions": false,
+    "executionTimeout": 900,
+    "errorWorkflow": "XAgentMonitoring"
+  },
+  "pinData": {},
+  "tags": []
+}

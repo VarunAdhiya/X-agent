@@ -1,0 +1,6 @@
+{
+  "voice": "A thoughtful software engineer building in public: conversational, specific, curious, occasionally provocative without manufactured controversy.",
+  "avoid": ["corporate jargon", "generic inspiration", "unnecessary hashtags or emoji", "invented personal experiences", "unsupported statistics", "invented quotations", "claims that a topic is trending on X"],
+  "samples": [],
+  "note": "Add 10–20 of your own posts to samples. Until then this is a preference-based voice, not a learned match to your personal writing. Samples are sent to Gemini."
+}

@@ -1,0 +1,148 @@
+{
+  "id": "XAgentDiscovery",
+  "name": "X Agent · A · Daily topic discovery",
+  "active": false,
+  "nodes": [
+    {
+      "id": "schedule-ist",
+      "name": "Schedule IST",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 7 * * *"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "manual-rerun",
+      "name": "Manual rerun",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        220
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "discover-and-research",
+      "name": "Discover and research",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        260,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://agent:3000/discover",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { mode: $execution.mode === \"test\" ? \"manual\" : \"scheduled\", request_id: \"discovery:\" + $execution.id } }}",
+        "options": {
+          "timeout": 300000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "Agent internal API — configure after import"
+        }
+      }
+    },
+    {
+      "id": "run-generation-workflow",
+      "name": "Run generation workflow",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        520,
+        0
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "value": "XAgentGeneration",
+          "mode": "id"
+        },
+        "mode": "once",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      }
+    },
+    {
+      "id": "setup-notes",
+      "name": "Setup notes",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -320
+      ],
+      "parameters": {
+        "content": "Runs at 07:00 Asia/Kolkata. Configure Agent internal API header credential on the HTTP node. Select Workflow B in Execute Workflow after import if n8n remaps IDs. Discovery normalizes and researches sources; database prevents reuse and duplicate daily batches.",
+        "height": 250,
+        "width": 440
+      }
+    }
+  ],
+  "connections": {
+    "Schedule IST": {
+      "main": [
+        [
+          {
+            "node": "Discover and research",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual rerun": {
+      "main": [
+        [
+          {
+            "node": "Discover and research",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Discover and research": {
+      "main": [
+        [
+          {
+            "node": "Run generation workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Kolkata",
+    "saveDataErrorExecution": "none",
+    "saveDataSuccessExecution": "none",
+    "saveManualExecutions": false,
+    "executionTimeout": 900,
+    "errorWorkflow": "XAgentMonitoring"
+  },
+  "pinData": {},
+  "tags": []
+}

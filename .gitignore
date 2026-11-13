@@ -1,0 +1,13 @@
+.env
+.env.*
+!.env.example
+node_modules/
+backups/
+coverage/
+*.log
+*.pem
+*.key
+supabase/.temp/
+supabase/.branches/
+.test-data/
+secrets/

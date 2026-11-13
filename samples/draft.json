@@ -1,0 +1,18 @@
+{
+  "id": "00000000-0000-4000-8000-000000000001",
+  "topic_id": "00000000-0000-4000-8000-000000000002",
+  "category": "engineering",
+  "content": "A smaller API surface gives a team fewer promises to keep.",
+  "source_urls": [],
+  "rationale": "An original evergreen perspective on maintenance cost.",
+  "status": "pending",
+  "content_version": 1,
+  "approved_version": null,
+  "scheduled_at": "2026-11-09T04:30:00.000Z",
+  "validation": {
+    "valid": true,
+    "max_weighted_length": 270,
+    "factuality": "human_review_required"
+  },
+  "note": "Illustrative schema only; IDs are not database rows. Times are 10:00 IST."
+}

@@ -1,0 +1,40 @@
+{
+  "feeds": [
+    { "url": "https://hnrss.org/frontpage", "category": "technology", "credibility": 0.6 },
+    { "url": "https://www.nature.com/subjects/psychology.rss", "category": "psychology", "credibility": 0.95 },
+    { "url": "https://news.mit.edu/rss/topic/artificial-intelligence2", "category": "ai", "credibility": 0.85 },
+    { "url": "https://news.google.com/rss/search?q=software+engineering+when:2d&hl=en-IN&gl=IN&ceid=IN:en", "category": "engineering", "credibility": 0.5 }
+  ],
+  "evergreen": [
+    { "title": "Treating a difficult feeling as information, not an instruction", "category": "emotions" },
+    { "title": "Career progress that does not appear on a promotion ladder", "category": "career" },
+    { "title": "Making room for uncertainty when learning something difficult", "category": "growth" },
+    { "title": "Why a smaller promise can be easier to keep", "category": "psychology" },
+    { "title": "Separating a disappointing result from personal identity", "category": "emotions" },
+    { "title": "The difference between being busy and learning", "category": "career" },
+    { "title": "Choosing a stopping point before chasing perfection", "category": "growth" },
+    { "title": "Asking for feedback while an idea is still changeable", "category": "career" },
+    { "title": "Letting a good day be ordinary instead of productive", "category": "emotions" },
+    { "title": "The value of naming a tradeoff before choosing", "category": "psychology" },
+    { "title": "Saying no without turning it into an argument", "category": "growth" },
+    { "title": "Distinguishing a preference from a boundary", "category": "emotions" },
+    { "title": "Changing your mind without rewriting your past", "category": "psychology" },
+    { "title": "Asking a simpler question when a problem feels overwhelming", "category": "growth" },
+    { "title": "Giving credit for invisible maintenance work", "category": "career" },
+    { "title": "Recognizing the cost of always being available", "category": "emotions" },
+    { "title": "Making a decision with enough information rather than all information", "category": "psychology" },
+    { "title": "Learning to explain an idea before defending it", "category": "growth" },
+    { "title": "Writing down what changed after receiving feedback", "category": "career" },
+    { "title": "Leaving space between an emotion and a response", "category": "emotions" },
+    { "title": "Choosing which comparisons are useful", "category": "psychology" },
+    { "title": "Creating a routine that allows for an imperfect day", "category": "growth" },
+    { "title": "Noticing whether advice fits your actual constraints", "category": "career" },
+    { "title": "Making a disagreement smaller and more specific", "category": "emotions" },
+    { "title": "Distinguishing curiosity from a need for certainty", "category": "psychology" },
+    { "title": "Taking a break without turning it into another task", "category": "growth" },
+    { "title": "Choosing collaborators by how they handle confusion", "category": "career" },
+    { "title": "Naming disappointment without dismissing progress", "category": "emotions" },
+    { "title": "Testing an assumption before making it a rule", "category": "psychology" },
+    { "title": "Building habits around a realistic energy level", "category": "growth" }
+  ]
+}

@@ -1,0 +1,2 @@
+# Host timezone must be Asia/Kolkata. Install root-owned as /etc/cron.d/x-content-agent-backup.
+30 3 * * * root cd /home/ubuntu/x-content-agent && /usr/bin/flock -n /run/lock/x-agent-backup.lock /bin/bash deploy/backup-container.sh >> /var/log/x-agent-backup.log 2>&1

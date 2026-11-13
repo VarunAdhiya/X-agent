@@ -1,0 +1,10 @@
+{
+  "discovery": { "discovered": 14, "source_failures": 1 },
+  "generation": { "generated": 5, "day": "2026-11-09" },
+  "ingress": { "ok": true },
+  "approval": { "processed": 1 },
+  "dry_publishing": { "id": "00000000-0000-4000-8000-000000000001", "state": "simulated" },
+  "live_publishing_disabled": { "blocked": "x_publishing_disabled" },
+  "ambiguous_publishing": { "state": "uncertain", "error_code": "x_transport_or_response_ambiguous" },
+  "note": "Illustrative payloads only; not evidence of live executions."
+}

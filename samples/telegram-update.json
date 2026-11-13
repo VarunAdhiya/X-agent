@@ -1,0 +1,9 @@
+{
+  "update_id": 101,
+  "callback_query": {
+    "id": "example-callback",
+    "from": { "id": 42, "is_bot": false },
+    "message": { "message_id": 100, "chat": { "id": 42, "type": "private" } },
+    "data": "approve:00000000-0000-4000-8000-000000000001:1"
+  }
+}
